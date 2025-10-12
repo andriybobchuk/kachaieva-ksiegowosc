@@ -1,163 +1,190 @@
 import React, { useState, useEffect } from 'react';
+import { translations } from './translations';
 
 function App() {
-  const [timeLeft, setTimeLeft] = useState({
-    hours: 23,
-    minutes: 59,
-    seconds: 59
+  // Detect browser language
+  const detectLanguage = () => {
+    const browserLang = navigator.language.toLowerCase();
+    if (browserLang.startsWith('pl')) return 'pl';
+    if (browserLang.startsWith('uk')) return 'ua';
+    if (browserLang.startsWith('ru')) return 'ru';
+    if (browserLang.startsWith('en')) return 'en';
+    return 'pl'; // Default to Polish
+  };
+
+  const [currentLang, setCurrentLang] = useState(() => {
+    return localStorage.getItem('preferredLanguage') || detectLanguage();
+  });
+  
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('darkMode') === 'true' || 
+           window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        }
-        return prev;
-      });
-    }, 1000);
+  const t = translations[currentLang];
 
-    return () => clearInterval(timer);
-  }, []);
+  const changeLanguage = (lang) => {
+    setCurrentLang(lang);
+    localStorage.setItem('preferredLanguage', lang);
+    setIsMobileMenuOpen(false);
+  };
 
-  // Minimal design system with single accent color (PrivatBank green)
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    localStorage.setItem('darkMode', (!isDarkMode).toString());
+  };
+
+  // Modern JetBrains-inspired color system
   const colors = {
-    accent: {
-      50: '#f0fdf4',
-      100: '#dcfce7',
-      500: '#22c55e',
-      600: '#16a34a',
-      700: '#15803d'
+    primary: {
+      50: '#f0fdf7',
+      100: '#dcfce9',
+      500: '#02C385',
+      600: '#029b6c',
+      700: '#027a54'
     },
-    neutral: {
-      50: '#f8fafc',
-      100: '#f1f5f9',
-      200: '#e2e8f0',
-      300: '#cbd5e1',
-      400: '#94a3b8',
-      500: '#64748b',
-      600: '#475569',
-      700: '#334155',
-      800: '#1e293b',
-      900: '#0f172a'
+    secondary: {
+      50: '#f4f3ff',
+      100: '#ebe9fe',
+      500: '#4502C3',
+      600: '#3702a3',
+      700: '#2d0283'
+    },
+    light: {
+      bg: '#ffffff',
+      bgSecondary: '#f8fafc',
+      bgTertiary: '#f1f5f9',
+      text: '#0f172a',
+      textSecondary: '#475569',
+      textMuted: '#64748b',
+      border: '#e2e8f0',
+      borderLight: '#f1f5f9'
+    },
+    dark: {
+      bg: '#0f0f23',
+      bgSecondary: '#1a1a2e',
+      bgTertiary: '#25253d',
+      text: '#ffffff',
+      textSecondary: '#d1d5db',
+      textMuted: '#9ca3af',
+      border: '#374151',
+      borderLight: '#4b5563'
     }
   };
+
+  const theme = isDarkMode ? colors.dark : colors.light;
 
   const styles = {
     body: {
       margin: 0,
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      fontFamily: "'JetBrains Mono', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace",
       lineHeight: 1.6,
-      color: colors.neutral[800]
+      color: theme.text,
+      background: theme.bg,
+      transition: 'background-color 0.3s ease, color 0.3s ease'
     },
     container: {
       maxWidth: '1200px',
       margin: '0 auto',
-      padding: '0 1rem'
+      padding: '0 1.5rem'
     },
     header: {
-      background: 'white',
-      color: colors.neutral[800],
-      padding: '0.5rem 0',
+      background: theme.bg,
+      color: theme.text,
+      padding: '0.75rem 0',
       position: 'sticky',
       top: 0,
       zIndex: 1000,
-      boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-      borderBottom: `1px solid ${colors.neutral[200]}`
+      backdropFilter: 'blur(10px)',
+      borderBottom: `1px solid ${theme.border}`,
+      transition: 'all 0.3s ease'
     },
     hero: {
-      background: `linear-gradient(135deg, rgba(248, 250, 252, 0.95), rgba(241, 245, 249, 0.95)), url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23cbd5e1' fill-opacity='0.4'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-      padding: '4rem 0',
-      textAlign: 'center'
+      background: theme.bg,
+      minHeight: '90vh',
+      display: 'flex',
+      alignItems: 'center',
+      position: 'relative',
+      overflow: 'hidden'
     },
     heroTitle: {
-      fontSize: '3.5rem',
+      fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
       fontWeight: '700',
-      color: colors.neutral[900],
-      marginBottom: '1rem'
+      color: theme.text,
+      marginBottom: '1rem',
+      lineHeight: 1.1,
+      letterSpacing: '-0.025em'
     },
     heroSubtitle: {
-      fontSize: '1.5rem',
-      color: colors.accent[600],
-      fontWeight: '600',
-      marginBottom: '2rem'
+      fontSize: 'clamp(1.2rem, 3vw, 1.8rem)',
+      color: theme.textSecondary,
+      fontWeight: '500',
+      marginBottom: '0.5rem',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '1rem',
+      flexWrap: 'wrap'
     },
-    card: {
-      background: 'white',
-      borderRadius: '1rem',
-      padding: '2rem',
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-      border: `1px solid ${colors.neutral[200]}`,
-      margin: '1rem 0'
+    tag: {
+      background: theme.bgTertiary,
+      color: theme.textMuted,
+      padding: '0.5rem 1rem',
+      borderRadius: '0.5rem',
+      border: `1px solid ${theme.border}`,
+      fontSize: '0.875rem',
+      fontWeight: '500',
+      display: 'inline-block',
+      margin: '0.25rem',
+      backdropFilter: 'blur(10px)',
+      transition: 'all 0.2s ease'
     },
     button: {
-      background: colors.accent[600],
+      background: colors.primary[500],
       color: 'white',
-      padding: '0.75rem 1.5rem',
+      padding: '1rem 2.5rem',
       borderRadius: '0.75rem',
       border: 'none',
-      fontSize: '1rem',
+      fontSize: '1.125rem',
       fontWeight: '600',
       cursor: 'pointer',
-      transition: 'all 0.2s ease',
+      transition: 'all 0.3s ease',
       display: 'inline-block',
       textDecoration: 'none',
-      margin: '0.5rem'
+      margin: '0.5rem',
+      boxShadow: '0 4px 12px rgba(2, 195, 133, 0.3)',
+      transform: 'translateY(0)'
     },
     buttonSecondary: {
-      background: colors.neutral[100],
-      color: colors.neutral[700],
-      border: `1px solid ${colors.neutral[300]}`,
+      background: theme.bgTertiary,
+      color: theme.text,
+      border: `1px solid ${theme.border}`,
       padding: '0.75rem 1.5rem',
       borderRadius: '0.75rem',
       fontSize: '1rem',
       fontWeight: '600',
       cursor: 'pointer',
-      transition: 'all 0.2s ease',
+      transition: 'all 0.3s ease',
       display: 'inline-block',
       textDecoration: 'none',
-      margin: '0.5rem'
+      margin: '0.5rem',
+      backdropFilter: 'blur(10px)'
+    },
+    card: {
+      background: theme.bgSecondary,
+      borderRadius: '1rem',
+      padding: '2rem',
+      border: `1px solid ${theme.border}`,
+      margin: '1rem 0',
+      backdropFilter: 'blur(10px)',
+      transition: 'all 0.3s ease'
     },
     grid: {
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
       gap: '1.5rem',
       margin: '2rem 0'
-    },
-    statCard: {
-      background: 'white',
-      padding: '1.5rem',
-      borderRadius: '1rem',
-      textAlign: 'center',
-      boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)',
-      border: `1px solid ${colors.neutral[200]}`
-    },
-    countdown: {
-      background: colors.neutral[100],
-      border: `1px solid ${colors.neutral[300]}`,
-      borderRadius: '0.75rem',
-      padding: '1rem',
-      margin: '1.5rem 0',
-      textAlign: 'center'
-    },
-    countdownTimer: {
-      display: 'flex',
-      justifyContent: 'center',
-      gap: '1rem',
-      margin: '1rem 0'
-    },
-    timerBox: {
-      background: colors.neutral[300],
-      color: colors.neutral[700],
-      padding: '0.75rem',
-      borderRadius: '0.5rem',
-      minWidth: '50px',
-      textAlign: 'center',
-      boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)'
     }
   };
 
@@ -167,163 +194,335 @@ function App() {
         * { box-sizing: border-box; }
         body { 
           margin: 0;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          font-family: 'JetBrains Mono', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
           line-height: 1.6;
-          color: ${colors.neutral[800]};
-          background: ${colors.neutral[50]};
+          color: ${theme.text};
+          background: ${theme.bg};
+          transition: background-color 0.3s ease, color 0.3s ease;
         }
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         
-        .hover-scale:hover { transform: translateY(-2px); }
-        .hover-shadow:hover { box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.15); }
-        .transition { transition: all 0.2s ease; }
-        .button-hover:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3); }
-        .button-secondary-hover:hover { background: ${colors.neutral[200]}; border-color: ${colors.neutral[400]}; }
+        .hover-lift:hover { 
+          transform: translateY(-2px); 
+          box-shadow: 0 8px 25px rgba(0, 0, 0, ${isDarkMode ? '0.3' : '0.15'}); 
+        }
+        .button-hover:hover { 
+          transform: translateY(-1px); 
+          box-shadow: 0 6px 20px rgba(2, 195, 133, 0.4); 
+        }
+        .button-secondary-hover:hover { 
+          background: ${theme.bgTertiary}; 
+          border-color: ${colors.primary[500]}; 
+          transform: translateY(-1px);
+        }
+        .tag-hover:hover {
+          background: ${colors.primary[500]};
+          color: white;
+          border-color: ${colors.primary[500]};
+          transform: translateY(-1px);
+        }
+        .transition { transition: all 0.3s ease; }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+          .mobile-menu {
+            display: ${isMobileMenuOpen ? 'block' : 'none'};
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: ${theme.bg};
+            border-bottom: 1px solid ${theme.border};
+            backdrop-filter: blur(10px);
+          }
+          .desktop-only { display: none !important; }
+          .mobile-only { display: block !important; }
+          .hero-subtitle-mobile { flex-direction: column !important; }
+        }
+        @media (min-width: 769px) {
+          .mobile-menu { display: none !important; }
+          .mobile-only { display: none !important; }
+          .desktop-only { display: flex !important; }
+        }
+        
+        /* Dark mode toggle */
+        .theme-toggle {
+          background: ${theme.bgTertiary};
+          border: 1px solid ${theme.border};
+          border-radius: 0.5rem;
+          width: 48px;
+          height: 28px;
+          position: relative;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .theme-toggle::after {
+          content: '';
+          position: absolute;
+          top: 2px;
+          left: ${isDarkMode ? '22px' : '2px'};
+          width: 22px;
+          height: 22px;
+          background: ${colors.primary[500]};
+          border-radius: 50%;
+          transition: all 0.3s ease;
+        }
       `}</style>
       
       {/* Header */}
       <header style={styles.header}>
         <div style={styles.container}>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+            {/* Logo */}
             <div>
-              <h1 style={{fontSize: '1.5rem', margin: 0, color: colors.neutral[900], fontWeight: '700'}}>Nataliia Kachaieva</h1>
-              <p style={{margin: 0, fontSize: '0.9rem', color: colors.neutral[600]}}>Księgowa Gliwice</p>
+              <h1 style={{fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', margin: 0, color: theme.text, fontWeight: '700', fontFamily: "'JetBrains Mono', monospace"}}>
+                {t.companyName}
+              </h1>
+              <p style={{margin: 0, fontSize: 'clamp(0.75rem, 2vw, 0.9rem)', color: theme.textMuted}}>
+                {t.companyTitle}
+              </p>
             </div>
-            <div style={{display: 'flex', gap: '0.75rem', flexWrap: 'wrap'}}>
-              <a href="tel:+48325551234" style={{...styles.buttonSecondary, textDecoration: 'none'}} className="button-secondary-hover transition">
-                📞 +48 32 555 1234
+            
+            {/* Desktop Navigation */}
+            <div className="desktop-only" style={{display: 'flex', gap: '1rem', alignItems: 'center'}}>
+              {/* Dark Mode Toggle */}
+              <div className="theme-toggle" onClick={toggleDarkMode}></div>
+              
+              {/* Language Switcher */}
+              <div style={{display: 'flex', gap: '0.25rem'}}>
+                {['PL', 'EN', 'UA', 'RU'].map((lang) => (
+                  <button
+                    key={lang}
+                    onClick={() => changeLanguage(lang.toLowerCase())}
+                    style={{
+                      padding: '0.375rem 0.75rem',
+                      background: currentLang === lang.toLowerCase() ? colors.primary[500] : 'transparent',
+                      color: currentLang === lang.toLowerCase() ? 'white' : theme.textMuted,
+                      border: `1px solid ${currentLang === lang.toLowerCase() ? colors.primary[500] : theme.border}`,
+                      borderRadius: '0.5rem',
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      fontFamily: "'JetBrains Mono', monospace"
+                    }}
+                  >
+                    {lang}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Call Button */}
+              <a href="tel:+48513630157" style={{...styles.button, margin: 0}} className="button-hover transition">
+                {t.callNow}
               </a>
-              <a href="https://wa.me/48325551234" style={{...styles.button, textDecoration: 'none'}} className="button-hover transition">
-                WhatsApp
+            </div>
+            
+            {/* Mobile Menu Button */}
+            <button
+              className="mobile-only"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                padding: '0.5rem',
+                color: theme.text
+              }}
+            >
+              {isMobileMenuOpen ? '✕' : '☰'}
+            </button>
+          </div>
+          
+          {/* Mobile Menu */}
+          <div className="mobile-menu" style={{padding: '1.5rem 0'}}>
+            <div style={{display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1.5rem'}}>
+              <div className="theme-toggle" onClick={toggleDarkMode}></div>
+              
+              {['PL', 'EN', 'UA', 'RU'].map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => changeLanguage(lang.toLowerCase())}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: currentLang === lang.toLowerCase() ? colors.primary[500] : 'transparent',
+                    color: currentLang === lang.toLowerCase() ? 'white' : theme.textMuted,
+                    border: `1px solid ${currentLang === lang.toLowerCase() ? colors.primary[500] : theme.border}`,
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    fontFamily: "'JetBrains Mono', monospace"
+                  }}
+                >
+                  {lang}
+                </button>
+              ))}
+            </div>
+            
+            <div style={{textAlign: 'center'}}>
+              <a href="tel:+48513630157" style={{...styles.button, width: 'auto'}} className="button-hover transition">
+                {t.callNow}
               </a>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero Section - 90vh */}
       <section style={styles.hero}>
-        <div style={styles.container}>
-          <h2 style={styles.heroTitle}>Profesjonalne Usługi Księgowe</h2>
-          <p style={{fontSize: '1.5rem', fontWeight: '600', marginBottom: '2rem', color: colors.neutral[600]}}>Księgowość JDG od <span style={{color: colors.accent[600]}}>299 zł/miesiąc</span></p>
-          <p style={{fontSize: '1.1rem', marginBottom: '2rem', maxWidth: '600px', margin: '0 auto 2rem'}}>
-            Kompleksowa obsługa księgowa • Kadry i płace • PIT, CIT, VAT • 
-            Obsługa zdalna w językach: polski, ukraiński, rosyjski
-          </p>
+        <div style={{...styles.container, width: '100%', display: 'flex', alignItems: 'center', minHeight: '90vh'}}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: window.innerWidth > 768 ? '1fr 1fr' : '1fr',
+            gap: '2rem',
+            alignItems: 'center',
+            width: '100%'
+          }}>
+            {/* Left side - Text Content */}
+            <div style={{textAlign: window.innerWidth > 768 ? 'left' : 'center', order: window.innerWidth > 768 ? 1 : 2}}>
+              {/* Main Title */}
+              <h2 style={{...styles.heroTitle, textAlign: window.innerWidth > 768 ? 'left' : 'center'}}>
+                {t.heroTitle}
+              </h2>
+              
+              {/* Subtitle with inline price */}
+              <div style={{...styles.heroSubtitle, justifyContent: window.innerWidth > 768 ? 'flex-start' : 'center', ...(window.innerWidth <= 768 ? {flexDirection: 'column'} : {})}} className="hero-subtitle-mobile">
+                <span>{t.heroSubtitle}</span>
+                <span style={{
+                  color: colors.primary[500], 
+                  fontWeight: '700',
+                  fontSize: 'clamp(1.4rem, 3.5vw, 2rem)',
+                  fontFamily: "'JetBrains Mono', monospace"
+                }}>
+                  {t.heroPrice}
+                </span>
+              </div>
+              
+              {/* Benefit Tags */}
+              <div style={{
+                margin: '3rem 0', 
+                display: 'flex', 
+                flexWrap: 'wrap', 
+                justifyContent: window.innerWidth > 768 ? 'flex-start' : 'center',
+                gap: '0.75rem'
+              }}>
+                {[t.heroBullet1, t.heroBullet2, t.heroBullet3, t.heroBullet4].map((bullet, i) => (
+                  <span key={i} style={styles.tag} className="tag-hover transition">
+                    {bullet}
+                  </span>
+                ))}
+              </div>
 
-          {/* Countdown */}
-          <div style={styles.countdown}>
-            <h3 style={{color: colors.neutral[800], margin: '0 0 0.5rem', fontWeight: '600'}}>Promocja: 20% rabatu na pierwszy miesiąc!</h3>
-            <p style={{margin: '0 0 0.5rem', color: colors.accent[700], fontWeight: '600', fontSize: '0.9rem'}}>Kod: PIERWSZYM20</p>
-            <p style={{margin: '0 0 1rem', color: colors.neutral[600], fontSize: '0.9rem'}}>Oferta wygasa za:</p>
-            <div style={styles.countdownTimer}>
-              <div style={styles.timerBox}>
-                <div style={{fontSize: '1.5rem', fontWeight: 'bold'}}>{String(timeLeft.hours).padStart(2, '0')}</div>
-                <div style={{fontSize: '0.8rem', opacity: 0.9}}>godzin</div>
-              </div>
-              <div style={styles.timerBox}>
-                <div style={{fontSize: '1.5rem', fontWeight: 'bold'}}>{String(timeLeft.minutes).padStart(2, '0')}</div>
-                <div style={{fontSize: '0.8rem', opacity: 0.9}}>minut</div>
-              </div>
-              <div style={styles.timerBox}>
-                <div style={{fontSize: '1.5rem', fontWeight: 'bold'}}>{String(timeLeft.seconds).padStart(2, '0')}</div>
-                <div style={{fontSize: '0.8rem', opacity: 0.9}}>sekund</div>
+              {/* Single CTA Button */}
+              <div style={{marginTop: '2rem', textAlign: window.innerWidth > 768 ? 'left' : 'center'}}>
+                <a href="tel:+48513630157" style={{
+                  ...styles.button,
+                  fontSize: 'clamp(1.1rem, 2.5vw, 1.3rem)',
+                  padding: 'clamp(1rem, 2vw, 1.25rem) clamp(2rem, 4vw, 3rem)'
+                }} className="button-hover transition">
+                  📞 {t.ctaMain}
+                </a>
               </div>
             </div>
-          </div>
-
-          <div style={{display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1rem'}}>
-            <a href="tel:+48325551234" style={{...styles.button, textDecoration: 'none'}} className="button-hover transition">
-              📞 Zadzwoń teraz
-            </a>
-            <a href="https://wa.me/48325551234" style={{...styles.buttonSecondary, textDecoration: 'none'}} className="button-secondary-hover transition">
-              💬 WhatsApp
-            </a>
+            
+            {/* Right side - Hero Illustration */}
+            <div style={{
+              order: window.innerWidth > 768 ? 2 : 1, 
+              textAlign: 'center',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <img 
+                src="/hero.svg" 
+                alt="Accounting illustration" 
+                style={{
+                  width: '100%',
+                  maxWidth: window.innerWidth > 768 ? '600px' : '400px',
+                  height: 'auto',
+                  opacity: isDarkMode ? 0.85 : 1,
+                  filter: isDarkMode ? 'brightness(0.9) hue-rotate(10deg)' : 'none',
+                  transition: 'all 0.3s ease'
+                }}
+                onError={(e) => {
+                  // Fallback to PNG if SVG fails
+                  e.target.src = '/hero.png';
+                }}
+              />
+            </div>
           </div>
         </div>
       </section>
 
       {/* Benefits */}
-      <section style={{padding: '3rem 0', background: 'white'}}>
+      <section style={{padding: '4rem 0', background: theme.bgSecondary}}>
         <div style={styles.container}>
           <div style={{textAlign: 'center', marginBottom: '3rem'}}>
-            <h2 style={{fontSize: '2.5rem', fontWeight: '700', marginBottom: '1rem', color: colors.neutral[900]}}>Dlaczego my?</h2>
-            <p style={{fontSize: '1.1rem', color: colors.neutral[600]}}>Profesjonalna obsługa dostosowana do Twoich potrzeb</p>
+            <h2 style={{fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: '700', marginBottom: '1rem', color: theme.text}}>{t.benefitsTitle}</h2>
+            <p style={{fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', color: theme.textSecondary}}>{t.benefitsSubtitle}</p>
           </div>
           <div style={styles.grid}>
-            <div style={{...styles.statCard}} className="hover-scale transition">
-              <div style={{fontSize: '2.5rem', marginBottom: '1rem'}}>🗣️</div>
-              <h3 style={{fontSize: '1.1rem', fontWeight: '600', color: colors.neutral[900], marginBottom: '0.5rem'}}>Obsługa wielojęzyczna</h3>
-              <div style={{color: colors.neutral[600], fontWeight: '500'}}>Będziesz obsługiwany w języku polskim, ukraińskim lub rosyjskim</div>
-            </div>
-            <div style={{...styles.statCard}} className="hover-scale transition">
-              <div style={{fontSize: '2.5rem', marginBottom: '1rem'}}>⚡</div>
-              <h3 style={{fontSize: '1.1rem', fontWeight: '600', color: colors.neutral[900], marginBottom: '0.5rem'}}>Szybka odpowiedź</h3>
-              <div style={{color: colors.neutral[600], fontWeight: '500'}}>Czas odpowiedzi do 12 godzin, przez cały tydzień</div>
-            </div>
-            <div style={{...styles.statCard}} className="hover-scale transition">
-              <div style={{fontSize: '2.5rem', marginBottom: '1rem'}}>💻</div>
-              <h3 style={{fontSize: '1.1rem', fontWeight: '600', color: colors.neutral[900], marginBottom: '0.5rem'}}>100% zdalnie</h3>
-              <div style={{color: colors.neutral[600], fontWeight: '500'}}>Wszystkie usługi świadczone online - oszczędzasz czas i pieniądze</div>
-            </div>
-            <div style={{...styles.statCard}} className="hover-scale transition">
-              <div style={{fontSize: '2.5rem', marginBottom: '1rem'}}>🛡️</div>
-              <h3 style={{fontSize: '1.1rem', fontWeight: '600', color: colors.neutral[900], marginBottom: '0.5rem'}}>Bezpieczeństwo danych</h3>
-              <div style={{color: colors.neutral[600], fontWeight: '500'}}>Szyfrowane połączenia i pełna ochrona Twoich danych biznesowych</div>
-            </div>
+            {[
+              {emoji: '🗣️', title: t.benefit1Title, desc: t.benefit1Desc},
+              {emoji: '⚡', title: t.benefit2Title, desc: t.benefit2Desc},
+              {emoji: '💻', title: t.benefit3Title, desc: t.benefit3Desc}
+            ].map((benefit, i) => (
+              <div key={i} style={{...styles.card, textAlign: 'center'}} className="hover-lift transition">
+                <div style={{fontSize: '3rem', marginBottom: '1rem'}}>{benefit.emoji}</div>
+                <h3 style={{fontSize: '1.2rem', fontWeight: '600', color: theme.text, marginBottom: '0.75rem', fontFamily: "'JetBrains Mono', monospace"}}>{benefit.title}</h3>
+                <div style={{color: theme.textSecondary, lineHeight: 1.6}}>{benefit.desc}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Services */}
-      <section style={{padding: '4rem 0'}}>
+      <section style={{padding: '4rem 0', background: theme.bg}}>
         <div style={styles.container}>
           <div style={{textAlign: 'center', marginBottom: '3rem'}}>
-            <h2 style={{fontSize: '2.5rem', fontWeight: '700', marginBottom: '1rem', color: colors.neutral[900]}}>Usługi księgowe</h2>
-            <p style={{fontSize: '1.1rem', color: colors.neutral[600]}}>Kompleksowa obsługa dla Twojej firmy</p>
+            <h2 style={{fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: '700', marginBottom: '1rem', color: theme.text}}>{t.servicesTitle}</h2>
+            <p style={{fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', color: theme.textSecondary}}>{t.servicesSubtitle}</p>
           </div>
           
           <div style={styles.grid}>
             {[
               {
                 icon: '📊',
-                title: 'Księgowość pełna',
-                price: '299 zł/miesiąc',
-                desc: 'Kompleksowa obsługa księgowa JDG i małych firm',
+                title: t.service1Title,
+                desc: t.service1Desc,
                 features: ['VAT', 'PIT', 'ZUS', 'JPK', 'Sprawozdania']
               },
               {
                 icon: '👥',
-                title: 'Kadry i płace',
-                price: '50 zł/pracownik',
-                desc: 'Obsługa kadrowo-płacowa pracowników',
+                title: t.service2Title,
+                desc: t.service2Desc,
                 features: ['Umowy', 'Listy płac', 'ZUS', 'US', 'Urlopy']
               },
               {
                 icon: '📋',
-                title: 'PIT, CIT, VAT',
-                price: '150-400 zł',
-                desc: 'Rozliczenia podatkowe i deklaracje',
+                title: t.service3Title,
+                desc: t.service3Desc,
                 features: ['PIT-36', 'PIT-37', 'CIT-8', 'VAT-7', 'Optymalizacja']
               }
             ].map((service, index) => (
-              <div key={index} style={styles.card} className="hover-shadow transition">
-                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem'}}>
-                  <div style={{fontSize: '2rem'}}>{service.icon}</div>
-                  <div style={{background: colors.neutral[200], color: colors.neutral[700], padding: '0.5rem 1rem', borderRadius: '2rem', fontSize: '0.9rem', fontWeight: '600'}}>
-                    {service.price}
-                  </div>
+              <div key={index} style={styles.card} className="hover-lift transition">
+                <div style={{textAlign: 'center', marginBottom: '1.5rem'}}>
+                  <div style={{fontSize: '3rem', marginBottom: '1rem'}}>{service.icon}</div>
                 </div>
-                <h3 style={{fontSize: '1.3rem', fontWeight: '600', marginBottom: '0.5rem', color: colors.neutral[900]}}>{service.title}</h3>
-                <p style={{color: colors.neutral[600], marginBottom: '1rem'}}>{service.desc}</p>
-                <div style={{display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.5rem'}}>
+                <h3 style={{fontSize: '1.4rem', fontWeight: '600', marginBottom: '0.75rem', color: theme.text, fontFamily: "'JetBrains Mono', monospace"}}>{service.title}</h3>
+                <p style={{color: theme.textSecondary, marginBottom: '1.5rem', lineHeight: 1.6}}>{service.desc}</p>
+                <div style={{display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '2rem'}}>
                   {service.features.map((feature, i) => (
-                    <span key={i} style={{background: colors.neutral[100], color: colors.neutral[700], padding: '0.25rem 0.75rem', borderRadius: '1rem', fontSize: '0.8rem', fontWeight: '500'}}>
+                    <span key={i} style={{...styles.tag, margin: '0.25rem 0'}}>
                       ✓ {feature}
                     </span>
                   ))}
                 </div>
-                <button style={{...styles.button, width: '100%'}} className="button-hover transition">Zapytaj o cenę</button>
+                <button style={{...styles.button, width: '100%', margin: 0}} className="button-hover transition">{t.askForPrice}</button>
               </div>
             ))}
           </div>
@@ -331,60 +530,106 @@ function App() {
       </section>
 
       {/* Contact */}
-      <section style={{padding: '4rem 0', background: colors.neutral[50]}}>
+      <section style={{padding: '4rem 0', background: theme.bgSecondary}}>
         <div style={styles.container}>
           <div style={{textAlign: 'center', marginBottom: '3rem'}}>
-            <h2 style={{fontSize: '2.5rem', fontWeight: '700', marginBottom: '1rem', color: colors.neutral[900]}}>Skontaktuj się ze mną</h2>
-            <p style={{fontSize: '1.1rem', color: colors.neutral[600]}}>Odpowiem w ciągu kilku godzin</p>
+            <h2 style={{fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: '700', marginBottom: '1rem', color: theme.text}}>{t.contactTitle}</h2>
+            <p style={{fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', color: theme.textSecondary}}>{t.contactSubtitle}</p>
           </div>
           
           <div style={styles.card}>
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem'}}>
+            <div style={{display: 'grid', gridTemplateColumns: window.innerWidth > 768 ? 'repeat(2, 1fr)' : '1fr', gap: '3rem'}}>
               <div>
-                <h3 style={{marginBottom: '1.5rem', color: colors.neutral[900], fontWeight: '600'}}>Dane kontaktowe</h3>
-                <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+                <h3 style={{marginBottom: '2rem', color: theme.text, fontWeight: '600', fontFamily: "'JetBrains Mono', monospace"}}>{t.contactDetails}</h3>
+                <div style={{display: 'flex', flexDirection: 'column', gap: '1.5rem'}}>
                   <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-                    <div style={{background: colors.neutral[700], color: 'white', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>📞</div>
+                    <div style={{background: colors.primary[500], color: 'white', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem'}}>📞</div>
                     <div>
-                      <div style={{fontWeight: '600', color: colors.neutral[900]}}>+48 32 555 1234</div>
-                      <div style={{color: colors.neutral[600], fontSize: '0.9rem'}}>Pon-Pt: 8:00-18:00</div>
+                      <div style={{fontWeight: '600', color: theme.text, fontFamily: "'JetBrains Mono', monospace"}}>+48 513 630 157</div>
+                      <div style={{color: theme.textMuted, fontSize: '0.9rem'}}>{t.workHours}</div>
                     </div>
                   </div>
                   <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-                    <div style={{background: colors.neutral[700], color: 'white', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>✉️</div>
+                    <div style={{background: colors.primary[500], color: 'white', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem'}}>✉️</div>
                     <div>
-                      <div style={{fontWeight: '600', color: colors.neutral[900]}}>nataliia.kachaieva@ksiegowa-gliwice.pl</div>
-                      <div style={{color: colors.neutral[600], fontSize: '0.9rem'}}>Odpowiedź w ciągu 2-4h</div>
-                    </div>
-                  </div>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-                    <div style={{background: colors.neutral[700], color: 'white', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>📍</div>
-                    <div>
-                      <div style={{fontWeight: '600', color: colors.neutral[900]}}>ul. Zwycięstwa 42/15</div>
-                      <div style={{color: colors.neutral[600], fontSize: '0.9rem'}}>44-100 Gliwice (obsługa zdalna)</div>
+                      <div style={{fontWeight: '600', color: theme.text, fontFamily: "'JetBrains Mono', monospace"}}>nataliakachaieva@gmail.com</div>
+                      <div style={{color: theme.textMuted, fontSize: '0.9rem'}}>{t.responseTime}</div>
                     </div>
                   </div>
                 </div>
                 
-                <div style={{display: 'flex', gap: '1rem', marginTop: '2rem'}}>
-                  <a href="https://wa.me/48325551234" style={{...styles.button, flex: 1, textAlign: 'center', textDecoration: 'none'}} className="button-hover transition">
+                <div style={{display: 'flex', gap: '1rem', marginTop: '2rem', flexDirection: window.innerWidth > 768 ? 'row' : 'column'}}>
+                  <a href="https://wa.me/48513630157" style={{...styles.button, flex: 1, textAlign: 'center', textDecoration: 'none', margin: 0}} className="button-hover transition">
                     WhatsApp
                   </a>
-                  <a href="https://t.me/nataliia_ksiegowa" style={{...styles.buttonSecondary, flex: 1, textAlign: 'center', textDecoration: 'none'}} className="button-secondary-hover transition">
+                  <a href="https://t.me/nataliia_ksiegowa" style={{...styles.buttonSecondary, flex: 1, textAlign: 'center', textDecoration: 'none', margin: 0}} className="button-secondary-hover transition">
                     Telegram
                   </a>
                 </div>
               </div>
               
               <div>
-                <h3 style={{marginBottom: '1.5rem', color: colors.neutral[900], fontWeight: '600'}}>Wyślij wiadomość</h3>
+                <h3 style={{marginBottom: '2rem', color: theme.text, fontWeight: '600', fontFamily: "'JetBrains Mono', monospace"}}>{t.sendMessage}</h3>
                 <form style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                  <input type="text" placeholder="Imię i nazwisko" style={{padding: '0.75rem', border: `1px solid ${colors.neutral[300]}`, borderRadius: '0.75rem', fontSize: '1rem', transition: 'border-color 0.2s ease'}} />
-                  <input type="email" placeholder="Email" style={{padding: '0.75rem', border: `1px solid ${colors.neutral[300]}`, borderRadius: '0.75rem', fontSize: '1rem', transition: 'border-color 0.2s ease'}} />
-                  <input type="tel" placeholder="Telefon" style={{padding: '0.75rem', border: `1px solid ${colors.neutral[300]}`, borderRadius: '0.75rem', fontSize: '1rem', transition: 'border-color 0.2s ease'}} />
-                  <textarea placeholder="Opisz swoje potrzeby księgowe..." rows="4" style={{padding: '0.75rem', border: `1px solid ${colors.neutral[300]}`, borderRadius: '0.75rem', fontSize: '1rem', resize: 'vertical', transition: 'border-color 0.2s ease'}}></textarea>
-                  <button type="submit" style={{...styles.button, width: '100%', padding: '1rem'}} className="button-hover transition">
-                    📧 Wyślij wiadomość
+                  <input 
+                    type="text" 
+                    placeholder={t.namePlaceholder} 
+                    style={{
+                      padding: '1rem', 
+                      border: `1px solid ${theme.border}`, 
+                      borderRadius: '0.75rem', 
+                      fontSize: '1rem', 
+                      transition: 'border-color 0.2s ease',
+                      background: theme.bgTertiary,
+                      color: theme.text,
+                      fontFamily: "'JetBrains Mono', monospace"
+                    }} 
+                  />
+                  <input 
+                    type="email" 
+                    placeholder={t.emailPlaceholder} 
+                    style={{
+                      padding: '1rem', 
+                      border: `1px solid ${theme.border}`, 
+                      borderRadius: '0.75rem', 
+                      fontSize: '1rem', 
+                      transition: 'border-color 0.2s ease',
+                      background: theme.bgTertiary,
+                      color: theme.text,
+                      fontFamily: "'JetBrains Mono', monospace"
+                    }} 
+                  />
+                  <input 
+                    type="tel" 
+                    placeholder={t.phonePlaceholder} 
+                    style={{
+                      padding: '1rem', 
+                      border: `1px solid ${theme.border}`, 
+                      borderRadius: '0.75rem', 
+                      fontSize: '1rem', 
+                      transition: 'border-color 0.2s ease',
+                      background: theme.bgTertiary,
+                      color: theme.text,
+                      fontFamily: "'JetBrains Mono', monospace"
+                    }} 
+                  />
+                  <textarea 
+                    placeholder={t.messagePlaceholder} 
+                    rows="4" 
+                    style={{
+                      padding: '1rem', 
+                      border: `1px solid ${theme.border}`, 
+                      borderRadius: '0.75rem', 
+                      fontSize: '1rem', 
+                      resize: 'vertical', 
+                      transition: 'border-color 0.2s ease',
+                      background: theme.bgTertiary,
+                      color: theme.text,
+                      fontFamily: "'JetBrains Mono', monospace"
+                    }}
+                  />
+                  <button type="submit" style={{...styles.button, width: '100%', padding: '1rem', margin: 0}} className="button-hover transition">
+                    📧 {t.sendButton}
                   </button>
                 </form>
               </div>
@@ -394,14 +639,14 @@ function App() {
       </section>
 
       {/* Footer */}
-      <footer style={{background: colors.neutral[900], color: 'white', padding: '2rem 0'}}>
+      <footer style={{background: theme.bg, color: theme.text, padding: '3rem 0', borderTop: `1px solid ${theme.border}`}}>
         <div style={styles.container}>
           <div style={{textAlign: 'center'}}>
-            <h3 style={{marginBottom: '1rem', fontWeight: '600'}}>Nataliia Kachaieva - Księgowa Gliwice</h3>
-            <p style={{color: colors.neutral[400], marginBottom: '1rem'}}>Profesjonalne usługi księgowe • Certyfikowana księgowa nr 2847/2018</p>
-            <p style={{color: colors.neutral[500], fontSize: '0.9rem'}}>
-              © 2024 Nataliia Kachaieva. Wszystkie prawa zastrzeżone. 
-              <br />Śląsk • Obsługa zdalna na terenie całej Polski
+            <h3 style={{marginBottom: '1rem', fontWeight: '600', fontFamily: "'JetBrains Mono', monospace"}}>{t.companyName} - {t.companyTitle}</h3>
+            <p style={{color: theme.textMuted, marginBottom: '1rem'}}>{t.footerDesc}</p>
+            <p style={{color: theme.textMuted, fontSize: '0.9rem'}}>
+              {t.footerRights}
+              <br />{t.footerArea}
             </p>
           </div>
         </div>
