@@ -313,9 +313,21 @@ function App() {
                 ))}
               </div>
               
-              {/* Call Button */}
-              <a href="tel:+48513630157" style={{...styles.button, margin: 0}} className="button-hover transition">
-                {t.callNow}
+              {/* Call Number */}
+              <a href="tel:+48513630157" style={{
+                fontSize: '1.1rem',
+                fontWeight: '700',
+                color: colors.primary[500],
+                textDecoration: 'none',
+                fontFamily: "'JetBrains Mono', monospace",
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                transition: 'all 0.3s ease'
+              }} 
+              onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
+              onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}>
+                📞 513 630 157
               </a>
             </div>
             
@@ -363,8 +375,19 @@ function App() {
             </div>
             
             <div style={{textAlign: 'center'}}>
-              <a href="tel:+48513630157" style={{...styles.button, width: 'auto'}} className="button-hover transition">
-                {t.callNow}
+              <a href="tel:+48513630157" style={{
+                fontSize: '1.8rem',
+                fontWeight: '900',
+                color: colors.primary[500],
+                textDecoration: 'underline',
+                textDecorationThickness: '2px',
+                textUnderlineOffset: '4px',
+                fontFamily: "'JetBrains Mono', monospace",
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                📞 513 630 157
               </a>
             </div>
           </div>
@@ -375,8 +398,9 @@ function App() {
       <section style={styles.hero}>
         <div style={{...styles.container, width: '100%', display: 'flex', alignItems: 'center', minHeight: '90vh'}}>
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: window.innerWidth > 768 ? '1fr 1fr' : '1fr',
+            display: window.innerWidth > 768 ? 'grid' : 'flex',
+            gridTemplateColumns: window.innerWidth > 768 ? '1fr 1fr' : 'none',
+            flexDirection: window.innerWidth > 768 ? 'row' : 'column',
             gap: '2rem',
             alignItems: 'center',
             width: '100%'
@@ -416,14 +440,25 @@ function App() {
                 ))}
               </div>
 
-              {/* Single CTA Button */}
+              {/* Phone Number CTA */}
               <div style={{marginTop: '2rem', textAlign: window.innerWidth > 768 ? 'left' : 'center'}}>
                 <a href="tel:+48513630157" style={{
-                  ...styles.button,
-                  fontSize: 'clamp(1.1rem, 2.5vw, 1.3rem)',
-                  padding: 'clamp(1rem, 2vw, 1.25rem) clamp(2rem, 4vw, 3rem)'
-                }} className="button-hover transition">
-                  📞 {t.ctaMain}
+                  fontSize: 'clamp(2rem, 4vw, 3rem)',
+                  fontWeight: '900',
+                  color: colors.primary[500],
+                  textDecoration: 'underline',
+                  textDecorationThickness: '3px',
+                  textUnderlineOffset: '6px',
+                  fontFamily: "'JetBrains Mono', monospace",
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  transition: 'all 0.3s ease'
+                }} 
+                className="phone-hover"
+                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                  <span style={{fontSize: '0.9em'}}>📞</span> 513 630 157
                 </a>
               </div>
             </div>
@@ -497,10 +532,10 @@ function App() {
                 features: ['VAT', 'PIT', 'ZUS', 'JPK', 'Sprawozdania']
               },
               {
-                icon: '👥',
+                icon: '🧾',
                 title: t.service2Title,
                 desc: t.service2Desc,
-                features: ['Umowy', 'Listy płac', 'ZUS', 'US', 'Urlopy']
+                features: ['Faktury VAT', 'KSEF', 'e-Faktury', 'Korekty', 'Export']
               },
               {
                 icon: '📋',
